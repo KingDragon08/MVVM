@@ -1,0 +1,75 @@
+<script>
+/**
+ * 0.最原始的版本
+ * 1.添加数据劫持的版本
+ */
+
+
+// 定义一个MVVM对象
+var MVVM = function (options) {
+    this.$options = options;
+    this.$data = options.data;
+    // 数据劫持
+    let data = options.data;
+    this.observe(data);
+}
+
+/**
+ * data是Object,所以是引用传参
+ * 好处是,不管递归多少层,改的都是同一份数据
+ */ 
+MVVM.prototype.observe = function (data) {
+    // this的作用域有点飘,用self定死到自身
+    let self = this;
+    // 遍历所有的key
+    for (let key in data) {
+        let val = data[key];
+        // 如果类型是object的话,需要递归设置get和set来进行数据劫持
+        if (typeof(val) === 'object') {
+            self.observe(val);
+        }
+        /**
+         * 最核心的部分了,数据劫持通过这里实现
+         * 为啥不写到else里面?
+         * 因为object本身也需要进行劫持
+         */
+        Object.defineProperty(data, key, {
+            configurable: true,
+            get: function () {
+                // 不能return data[key],否则之后取值时会死递归调用get方法
+                return val;
+            },
+            set: function (newVal) {
+                /* 
+                 * 简单类型且值重复的时候直接返回
+                 * 对象之间永远不会 ===
+                 * 因为对象都是个指针,即使内容完全一致,指针地址也不一样
+                 */
+                if (newVal === val) {
+                    return;
+                }
+                val = newVal;
+                // 如果新值也是个对象的话,需要递归加入数据劫持
+                if (typeof(newVal) === 'object') {
+                    self.observe(newVal);
+                }
+            }
+        });
+    }
+}
+
+// new一个【对象】进行测试
+var vm = new MVVM({
+    el: '#app',
+    data: {
+        a: 1,
+        b: {
+            c: 2,
+            d: 3
+        },
+        e: [1,2,3]
+    }
+});
+console.log(vm);
+
+</script>

@@ -1,0 +1,30 @@
+<script>
+/**
+ * 0.最原始的版本
+ * 写一个MVVM对象,接收配置参数
+ * 仿造Vue风格,将data赋值给$data
+ */
+
+
+// 定义一个MVVM对象
+var MVVM = function (options) {
+    this.$options = options;
+    this.$data = options.data;
+}
+
+// new一个【对象】进行测试
+var vm = new MVVM({
+    el: '#app',
+    data: {
+        a: 1,
+        b: {
+            c: 2,
+            d: 3
+        },
+        e: [1,2,3]
+    }
+});
+console.log(vm);
+
+
+</script>
